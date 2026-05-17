@@ -1,80 +1,259 @@
+# ============================================================
+# TASK 1: DATA COLLECTION + PREPROCESSING
+# ============================================================
+
 import os
 import pandas as pd
-from google_play_scraper import Sort, reviews_all
+
+from google_play_scraper import (
+    Sort,
+    reviews_all
+)
+
+
+# ============================================================
+# MAIN SCRAPING PIPELINE
+# ============================================================
 
 def collect_and_clean_reviews():
-    # 1. Target Apps mapped to their official Play Store package IDs
+
+    # --------------------------------------------------------
+    # TARGET APPLICATIONS
+    # --------------------------------------------------------
+
     target_apps = {
-        "CBE Bank": "com.combanketh.mobilebanking",       # Commercial Bank of Ethiopia
-        "Bank of Abyssinia": "com.boa.boaMobileBanking",  # BoA Mobile
-        "Dashen Bank": "com.dashen.dashensuperapp"        # Dashen SuperApp
+
+        "CBE Bank":
+            "com.combanketh.mobilebanking",
+
+        "Bank of Abyssinia":
+            "com.boa.boaMobileBanking",
+
+        "Dashen Bank":
+            "com.dashen.dashensuperapp"
     }
-    
+
     combined_reviews = []
-    
-    # 2. Scraping Phase
+
+    # --------------------------------------------------------
+    # SCRAPING PHASE
+    # --------------------------------------------------------
+
     for bank_name, app_id in target_apps.items():
-        print(f"--- Starting scrape for {bank_name} ({app_id}) ---")
+
+        print(f"\n--- Scraping {bank_name} ---")
+
         try:
-            # reviews_all downloads records sequentially in background chunks
+
             raw_data = reviews_all(
                 app_id,
-                lang='en', 
-                country='us', 
+                lang='en',
+                country='us',
                 sort=Sort.NEWEST
             )
-            print(f"Successfully pulled {len(raw_data)} raw reviews from {bank_name}.")
-            
-            # Map API fields directly to assignment specs
-            for item in raw_data:
-                combined_reviews.append({
-                    'review': item.get('content'),
-                    'rating': item.get('score'),
-                    'date': item.get('at'),
-                    'bank': bank_name,
-                    'source': 'Google Play'
-                })
-                
-        except Exception as error:
-            print(f"CRITICAL ERROR scraping {bank_name}: {error}")
-            print("Skipping to next bank...")
 
-    # Verify we actually got data before doing math operations
+            print(
+                f"Collected {len(raw_data)} raw reviews "
+                f"from {bank_name}."
+            )
+
+            # KPI validation
+            if len(raw_data) < 400:
+
+                print(
+                    f"WARNING: Only {len(raw_data)} reviews "
+                    f"collected for {bank_name}."
+                )
+
+            # Map fields
+            for item in raw_data:
+
+                combined_reviews.append({
+
+                    'review':
+                        item.get('content'),
+
+                    'rating':
+                        item.get('score'),
+
+                    'date':
+                        item.get('at'),
+
+                    'bank':
+                        bank_name,
+
+                    'source':
+                        'Google Play'
+                })
+
+        except Exception as error:
+
+            print(
+                f"ERROR scraping {bank_name}: {error}"
+            )
+
+            print("Skipping to next app...")
+
+    # --------------------------------------------------------
+    # VALIDATE COLLECTION
+    # --------------------------------------------------------
+
     if not combined_reviews:
-        print("Error: No data was collected from any app. Check your internet connection.")
+
+        print(
+            "ERROR: No reviews collected."
+        )
+
         return
 
-    # Convert array into a structural Pandas DataFrame for easy tracking
+    # --------------------------------------------------------
+    # CREATE DATAFRAME
+    # --------------------------------------------------------
+
     df = pd.DataFrame(combined_reviews)
-    print(f"\n--- Scraping complete. Total records gathered: {len(df)} ---")
 
-    # 3. Step-by-Step Preprocessing Pipeline (Easy to isolate and debug)
-    print("\n[Pipeline Step 1] Cleaning Missing Values...")
+    print(
+        f"\nTotal Raw Reviews Collected: {len(df)}"
+    )
+
+    # --------------------------------------------------------
+    # MISSING VALUE ANALYSIS
+    # --------------------------------------------------------
+
+    print("\n=== Missing Value Analysis ===")
+
+    missing_reviews = df['review'].isnull().sum()
+    missing_ratings = df['rating'].isnull().sum()
+
+    print(f"Missing Reviews: {missing_reviews}")
+    print(f"Missing Ratings: {missing_ratings}")
+
+    missing_percentage = (
+
+        (missing_reviews + missing_ratings)
+
+        / (len(df) * 2)
+
+    ) * 100
+
+    print(
+        f"Missing Data Percentage: "
+        f"{missing_percentage:.2f}%"
+    )
+
+    # --------------------------------------------------------
+    # REMOVE MISSING VALUES
+    # --------------------------------------------------------
+
+    print("\nRemoving missing rows...")
+
     initial_rows = len(df)
-    df = df.dropna(subset=['review', 'rating'])
-    print(f"Dropped {initial_rows - len(df)} empty rows.")
 
-    print("\n[Pipeline Step 2] Removing Exact Duplicates...")
+    df = df.dropna(
+        subset=['review', 'rating']
+    )
+
+    print(
+        f"Removed {initial_rows - len(df)} rows."
+    )
+
+    # --------------------------------------------------------
+    # REMOVE DUPLICATES
+    # --------------------------------------------------------
+
+    print("\nRemoving duplicate reviews...")
+
     before_dedup = len(df)
-    df = df.drop_duplicates(subset=['review', 'rating', 'bank'])
-    print(f"Dropped {before_dedup - len(df)} duplicate reviews.")
 
-    print("\n[Pipeline Step 3] Normalizing Date Structures...")
-    # Convert dates safely to standard string format YYYY-MM-DD
-    df['date'] = pd.to_datetime(df['date']).dt.strftime('%Y-%m-%d')
-    print("Dates successfully transformed.")
+    df = df.drop_duplicates(
+        subset=['review', 'rating', 'bank']
+    )
 
-    # 4. Storage Phase
-    print("\n[Pipeline Step 4] Writing Dataset to Local Disk...")
-    os.makedirs('data/raw', exist_ok=True)
-    output_file = 'data/raw/cleaned_reviews.csv'
-    
-    df.to_csv(output_file, index=False)
-    print(f"SUCCESS: Safe, untracked dataset built at '{output_file}' with {len(df)} lines.")
-    
-    # Debug Summary Matrix to console
-    print("\nFinal clean count breakdown per bank:")
+    print(
+        f"Removed {before_dedup - len(df)} duplicates."
+    )
+
+    # --------------------------------------------------------
+    # DATE NORMALIZATION
+    # --------------------------------------------------------
+
+    print("\nNormalizing date formats...")
+
+    df['date'] = (
+        pd.to_datetime(df['date'])
+        .dt.strftime('%Y-%m-%d')
+    )
+
+    print("Date normalization complete.")
+
+    # --------------------------------------------------------
+    # FINAL SCHEMA VALIDATION
+    # --------------------------------------------------------
+
+    required_columns = [
+
+        'review',
+        'rating',
+        'date',
+        'bank',
+        'source'
+    ]
+
+    print("\nFinal Dataset Columns:")
+
+    print(df.columns.tolist())
+
+    assert all(
+        col in df.columns
+        for col in required_columns
+    ), "Dataset schema mismatch!"
+
+    # --------------------------------------------------------
+    # SAVE CLEAN DATASET
+    # --------------------------------------------------------
+
+    print("\nSaving cleaned dataset...")
+
+    os.makedirs(
+        'data/raw',
+        exist_ok=True
+    )
+
+    output_file = (
+        'data/raw/cleaned_reviews.csv'
+    )
+
+    df.to_csv(
+        output_file,
+        index=False
+    )
+
+    print(
+        f"\nSUCCESS: Dataset saved to:\n"
+        f"{output_file}"
+    )
+
+    print(
+        f"\nFinal Dataset Size: {len(df)}"
+    )
+
+    # --------------------------------------------------------
+    # FINAL KPI BREAKDOWN
+    # --------------------------------------------------------
+
+    print("\n=== Reviews Per Bank ===")
+
     print(df['bank'].value_counts())
 
+    print("\n=== Sample Rows ===")
+
+    print(df.head())
+
+
+# ============================================================
+# SCRIPT ENTRYPOINT
+# ============================================================
+
 if __name__ == "__main__":
+
     collect_and_clean_reviews()
