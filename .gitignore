@@ -1,0 +1,12 @@
+# Data and local storage
+data/
+*.csv
+*.db
+*.json
+!/.vscode/settings.json
+
+# Python environment
+__pycache__/
+*.pyc
+.venv/
+env/
