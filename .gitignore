@@ -4,7 +4,7 @@ data/
 *.db
 *.json
 !/.vscode/settings.json
-
+.env
 # Python environment
 __pycache__/
 *.pyc
