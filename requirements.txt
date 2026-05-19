@@ -4,3 +4,11 @@ pytest>=8.0.0
 sqlalchemy
 psycopg2-binary
 python-dotenv
+numpy
+matplotlib
+seaborn
+wordcloud
+jupyter
+notebook
+scikit-learn
+nltk
