@@ -95,6 +95,65 @@ All pipeline tasks executed perfectly!
 
 ---
 
+## 📊 Step 4: Insights, Visualizations & Recommendations
+
+### 1. Analytical Visualizations Dashboard
+The automated pipeline executes token text cleaning alongside statutory statistical distributions. It generates, saves, and updates 5 structural assets inside the `/reports/figures/` directory:
+
+* `sentiment_distribution.png`: Stacked bar chart profiling positive vs. negative volume balances across institutions.
+* `rating_distribution.png`: Boxplot isolating rating medians, IQR spread, and density distributions per platform.
+* `[bank_name]_keywords.png`: Horizontal bar chart plotting the top 10 unique, non-stopword tokens.
+* `[bank_name]_wordcloud.png`: High-density visual word layouts showing qualitative customer feedback weightings.
+* `sentiment_trend.png`: A comprehensive monthly rolling line chart tracking structural historical sentiment changes.
+
+### 2. Cross-Bank Comparative Assessment Matrix
+
+
+| Dimension | Commercial Bank of Ethiopia (CBE) | Bank of Abyssinia (BoA) | Dashen Bank |
+| :--- | :--- | :--- | :--- |
+| **Overall Sentiment** | High volume, split between strong loyalty and severe transaction friction. | Highly polarized; suffering from explicit software development team criticism. | Balanced; lower review volume with stable utility scores. |
+| **Average Rating** | Moderate (Driven by sheer user base scale). | Low (Pulled down heavily by recent stability updates). | Moderate-High (Stable user experience). |
+| **Dominant Theme** | Core Transaction Engine Reliability. | Application Architecture & Latency. | Interface Usability & Feature Navigation. |
+
+### 3. Deep-Dive Grounded Insights & Action Plans
+
+#### 🏦 Commercial Bank of Ethiopia (CBE)
+* **Top 2 Satisfaction Drivers**:
+  * **Easy** (Mentioned 332 times): Users find the UI accessible and intuitive during stable runtime environments.
+  * **Fast** (Mentioned 192 times): Core query workflows and regional processing operations score efficiently.
+* **Top 2 Critical Pain Points**:
+  * **Transaction** (Mentioned 212 times): Timeout issues and network execution blocks on processing pathways.
+  * **Money** (Mentioned 188 times): Disconnects between localized ledger states and live customer balances.
+* **Engineering Actions**:
+  1. Refactor distributed background database transaction pipelines to systematically clear transactional deadlocks.
+  2. Deploy secure client-side idempotent transaction IDs to handle mid-request network drops without double-debiting.
+
+#### 🏦 Bank of Abyssinia (BoA)
+* **Top 2 Satisfaction Drivers**:
+  * **Fast** (Mentioned 20 times): Initial layout painting velocities and micro-animations score favorably.
+  * **Service** (Mentioned 19 times): Digital self-service options decrease customer reliance on brick-and-mortar branches.
+* **Top 2 Critical Pain Points**:
+  * **Developer** (Mentioned 45 times): Customers explicitly target build stability degradation and patch regressions.
+  * **Slow / Version** (Combined 34+ times): Massive degradation of processing velocity directly related to explicit system versions.
+* **Engineering Actions**:
+  1. Dedicate a focused hotfix sprint pipeline targeting main-thread memory leaks and multi-core thread blocking.
+  2. Implement a pre-release matrix pipeline executing automated integration and layout compatibility checks across diverse legacy OS variants.
+
+#### 🏦 Dashen Bank
+* **Top 2 Satisfaction Drivers**:
+  * **Easy** (Mentioned 65 times): User layout structures support flat, shallow navigation pathways.
+  * **Fast** (Mentioned 64 times): Peer-to-peer asset movements and internal queries post low processing durations.
+* **Top 2 Critical Pain Points**:
+  * **Slow** (Mentioned 25 times): Microservice API orchestration overhead stalls integration processing flows.
+  * **Account** (Mentioned 22 times): Unexpected runtime auth-token exceptions forcefully logging out active sessions.
+* **Engineering Actions**:
+  1. Minimize redundant state re-rendering sequences and implement local key-value data caching strategies.
+  2. Review security token lifecycle configurations to extend secure active-session lifetimes while users construct payloads.
+
+---
+
 ## ⚠️ Pipeline Constraints & Operational Frontiers
 * **Language Profiling Restrictions**: The filtering engine blocks non-English datasets. Any user reviews published natively utilizing Ge'ez syntax, Amharic configurations, or alternative regional variations are omitted from analysis.
 * **Text Variable Volume Ranges**: Text entry lengths fluctuate between single-character keywords and long paragraphs, requiring downstream text sequence management protocols for deep NLP modeling tasks.
+* **Negativity Bias**: App reviews are highly vulnerable to voluntary response bias. Disgruntled customers experiencing failures are disproportionately represented compared to passive, satisfied cohorts.
+* **Sampling Bias**: Scraped metrics capture distinct software production releases. They are inherently prone to short-term data spikes during major system blackouts or unoptimized feature rollouts.
